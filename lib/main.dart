@@ -12,7 +12,7 @@ class VowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      //home: const HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
