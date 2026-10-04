@@ -16,9 +16,7 @@ class MeetingService {
     final token = await _getToken();
 
     final response = await http.get(
-      Uri.parse(
-        '${ApiConfig.baseUrl}/api/meetings?workspaceId=$workspaceId',
-      ),
+      Uri.parse('${ApiConfig.baseUrl}/api/meetings?workspaceId=$workspaceId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -28,13 +26,47 @@ class MeetingService {
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
 
-      return data
-          .map((json) => Meeting.fromJson(json))
-          .toList();
+      return data.map((json) => Meeting.fromJson(json)).toList();
+    }
+
+    throw Exception('Failed to load meetings: ${response.statusCode}');
+  }
+
+  Future<Meeting> createMeeting({
+    required String workspaceId,
+    required String roomId,
+    required String title,
+    String description = '',
+    List<String> participants = const [],
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final token = await _getToken();
+
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/api/meetings'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'workspaceId': workspaceId,
+        'roomId': roomId,
+        'title': title,
+        'description': description,
+        'participants': participants,
+        'startTime': startTime.toUtc().toIso8601String(),
+        'endTime': endTime.toUtc().toIso8601String(),
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      return Meeting.fromJson(jsonDecode(response.body));
     }
 
     throw Exception(
-      'Failed to load meetings: ${response.statusCode}',
+      'Failed to create meeting: '
+      '${response.statusCode} ${response.body}',
     );
   }
 }

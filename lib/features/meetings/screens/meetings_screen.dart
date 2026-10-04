@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'schedule_meeting_screen.dart';
 import '../../../models/meeting.dart';
 import '../../../models/user.dart';
 import '../../../services/meeting_service.dart';
@@ -8,11 +9,7 @@ class MeetingsScreen extends StatefulWidget {
   final User user;
   final String? workspaceId;
 
-  const MeetingsScreen({
-    super.key,
-    required this.user,
-    this.workspaceId,
-  });
+  const MeetingsScreen({super.key, required this.user, this.workspaceId});
 
   @override
   State<MeetingsScreen> createState() => _MeetingsScreenState();
@@ -35,16 +32,14 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   Future<void> loadMeetings() async {
     if (widget.workspaceId == null) {
       setState(() {
-        meetings = _mockMeetings();
+        meetings = [];
         isLoading = false;
       });
       return;
     }
 
     try {
-      final data = await meetingService.getMeetings(
-        widget.workspaceId!,
-      );
+      final data = await meetingService.getMeetings(widget.workspaceId!);
 
       setState(() {
         meetings = data;
@@ -54,7 +49,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       debugPrint('Meeting error: $e');
 
       setState(() {
-        meetings = _mockMeetings();
+        meetings = [];
         isLoading = false;
       });
     }
@@ -71,28 +66,9 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         title: 'Product Roadmap Sync',
         description: '',
         createdBy: widget.user.id,
-        participants: [
-          'A',
-          'B',
-          'C',
-          'D',
-          'E',
-          'F',
-        ],
-        startTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          14,
-          0,
-        ),
-        endTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          15,
-          0,
-        ),
+        participants: ['A', 'B', 'C', 'D', 'E', 'F'],
+        startTime: DateTime(now.year, now.month, now.day, 14, 0),
+        endTime: DateTime(now.year, now.month, now.day, 15, 0),
         meetingCode: 'ROADMAP',
         meetingLink: 'https://vow.app/meeting/roadmap',
         status: 'active',
@@ -106,20 +82,8 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         description: '',
         createdBy: widget.user.id,
         participants: [],
-        startTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          16,
-          0,
-        ),
-        endTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          16,
-          30,
-        ),
+        startTime: DateTime(now.year, now.month, now.day, 16, 0),
+        endTime: DateTime(now.year, now.month, now.day, 16, 30),
         meetingCode: 'ENGINEER',
         meetingLink: 'https://vow.app/meeting/engineering',
         status: 'scheduled',
@@ -133,20 +97,8 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         description: '',
         createdBy: widget.user.id,
         participants: [],
-        startTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          11,
-          0,
-        ),
-        endTime: DateTime(
-          now.year,
-          now.month,
-          now.day,
-          12,
-          0,
-        ),
+        startTime: DateTime(now.year, now.month, now.day, 11, 0),
+        endTime: DateTime(now.year, now.month, now.day, 12, 0),
         meetingCode: 'MARKETING',
         meetingLink: 'https://vow.app/meeting/marketing',
         status: 'scheduled',
@@ -160,9 +112,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     }
 
     return meetings.where((meeting) {
-      return meeting.title
-          .toLowerCase()
-          .contains(searchQuery.toLowerCase());
+      return meeting.title.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -170,8 +120,8 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     final hour = time.hour > 12
         ? time.hour - 12
         : time.hour == 0
-            ? 12
-            : time.hour;
+        ? 12
+        : time.hour;
 
     final minute = time.minute.toString().padLeft(2, '0');
 
@@ -180,10 +130,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     return '$hour:$minute $period';
   }
 
-  String formatDuration(
-    DateTime start,
-    DateTime end,
-  ) {
+  String formatDuration(DateTime start, DateTime end) {
     final minutes = end.difference(start).inMinutes;
 
     if (minutes >= 60) {
@@ -208,12 +155,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  22,
-                  20,
-                  22,
-                  20,
-                ),
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -236,12 +178,12 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                           child: CircularProgressIndicator(),
                         ),
                       )
+                    else if (filtered.isEmpty)
+                      _buildEmptyMeetings()
                     else
                       ...filtered.map(
                         (meeting) => Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: 12,
-                          ),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: _buildMeetingCard(meeting),
                         ),
                       ),
@@ -260,12 +202,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   Widget _buildHeader() {
     return Container(
       height: 112,
-      padding: const EdgeInsets.fromLTRB(
-        22,
-        22,
-        22,
-        16,
-      ),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
       color: const Color(0xFF202638),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,10 +214,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                 height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: const Icon(
                   Icons.diamond_outlined,
@@ -310,11 +244,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
               const SizedBox(width: 20),
 
-              const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 27,
-              ),
+              const Icon(Icons.menu, color: Colors.white, size: 27),
             ],
           ),
 
@@ -324,19 +254,12 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
             children: [
               Text(
                 'Acme Corp HQ',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
 
               SizedBox(width: 4),
 
-              Icon(
-                Icons.keyboard_arrow_down,
-                color: Colors.white70,
-                size: 15,
-              ),
+              Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 15),
             ],
           ),
         ],
@@ -359,20 +282,14 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         const Spacer(),
 
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 7,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             color: const Color(0xFFEDEFF8),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             '${meetings.length} today',
-            style: const TextStyle(
-              color: Color(0xFF73798C),
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Color(0xFF73798C), fontSize: 12),
           ),
         ),
       ],
@@ -385,9 +302,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(11),
-        border: Border.all(
-          color: const Color(0xFFDCE0EA),
-        ),
+        border: Border.all(color: const Color(0xFFDCE0EA)),
       ),
       child: TextField(
         onChanged: (value) {
@@ -397,18 +312,10 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         },
         decoration: const InputDecoration(
           border: InputBorder.none,
-          prefixIcon: Icon(
-            Icons.search,
-            color: Color(0xFF73798C),
-          ),
+          prefixIcon: Icon(Icons.search, color: Color(0xFF73798C)),
           hintText: 'Search',
-          hintStyle: TextStyle(
-            color: Color(0xFF858B9D),
-            fontSize: 13,
-          ),
-          contentPadding: EdgeInsets.symmetric(
-            vertical: 12,
-          ),
+          hintStyle: TextStyle(color: Color(0xFF858B9D), fontSize: 13),
+          contentPadding: EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );
@@ -419,19 +326,37 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Schedule meeting screen will be added next.
+        onPressed: () async {
+          if (widget.workspaceId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Workspace is required to schedule a meeting'),
+              ),
+            );
+            return;
+          }
+
+          // Temporary: backend requires roomId.
+          // We will get the real room from workspace data
+          // in the next step.
+          final meeting = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ScheduleMeetingScreen(workspaceId: widget.workspaceId!),
+            ),
+          );
+
+          if (meeting is Meeting) {
+            setState(() {
+              meetings.insert(0, meeting);
+            });
+          }
         },
-        icon: const Icon(
-          Icons.add,
-          size: 22,
-        ),
+        icon: const Icon(Icons.add),
         label: const Text(
           'Schedule New Meeting',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2D5FEF),
@@ -449,18 +374,11 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     final isActive = meeting.status == 'active';
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        15,
-        15,
-        15,
-        14,
-      ),
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFD7DAE7),
-        ),
+        border: Border.all(color: const Color(0xFFD7DAE7)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,10 +396,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                 ),
               ),
 
-              const Icon(
-                Icons.more_horiz,
-                color: Color(0xFF7B8191),
-              ),
+              const Icon(Icons.more_horiz, color: Color(0xFF7B8191)),
             ],
           ),
 
@@ -501,8 +416,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                       child: CircleAvatar(
                         radius: 15,
                         backgroundColor:
-                            Colors.primaries[index %
-                                Colors.primaries.length],
+                            Colors.primaries[index % Colors.primaries.length],
                         child: Text(
                           meeting.participants[index]
                               .substring(0, 1)
@@ -525,11 +439,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
           Row(
             children: [
-              const Icon(
-                Icons.access_time,
-                size: 17,
-                color: Color(0xFF7B8191),
-              ),
+              const Icon(Icons.access_time, size: 17, color: Color(0xFF7B8191)),
 
               const SizedBox(width: 7),
 
@@ -537,10 +447,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                 'Today, ${formatTime(meeting.startTime)} – '
                 '${formatTime(meeting.endTime)} '
                 '(${formatDuration(meeting.startTime, meeting.endTime)})',
-                style: const TextStyle(
-                  color: Color(0xFF73798C),
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Color(0xFF73798C), fontSize: 12),
               ),
             ],
           ),
@@ -559,10 +466,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
               const Text(
                 'Location: Design Studio (Virtual)',
-                style: TextStyle(
-                  color: Color(0xFF73798C),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFF73798C), fontSize: 12),
               ),
             ],
           ),
@@ -572,28 +476,18 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
           Row(
             children: [
               if (isActive) ...[
-                const Icon(
-                  Icons.circle,
-                  size: 7,
-                  color: Color(0xFF29A36A),
-                ),
+                const Icon(Icons.circle, size: 7, color: Color(0xFF29A36A)),
 
                 const SizedBox(width: 5),
 
                 const Text(
                   'Recurring (Weekly)',
-                  style: TextStyle(
-                    color: Color(0xFF29A36A),
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Color(0xFF29A36A), fontSize: 11),
                 ),
               ] else
                 const Text(
                   'Not started',
-                  style: TextStyle(
-                    color: Color(0xFF7B8191),
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Color(0xFF7B8191), fontSize: 11),
                 ),
 
               const Spacer(),
@@ -610,8 +504,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2D5FEF),
-                    disabledBackgroundColor:
-                        const Color(0xFFC7C8CE),
+                    disabledBackgroundColor: const Color(0xFFC7C8CE),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -644,6 +537,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       unselectedFontSize: 10,
       backgroundColor: Colors.white,
       elevation: 8,
+
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.grid_view_outlined),
@@ -671,6 +565,66 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
           label: 'Profile',
         ),
       ],
+
+      // 👇 YAHAN ADD KARO
+      onTap: (index) {
+        if (index == 0) {
+          Navigator.pop(context);
+        }
+      },
     );
   }
+}
+
+Widget _buildEmptyMeetings() {
+  return SizedBox(
+    width: double.infinity,
+    height: 520,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 112,
+          height: 112,
+          decoration: const BoxDecoration(
+            color: Color(0xFFEAF0FF),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.calendar_month_outlined,
+            size: 52,
+            color: Color(0xFF2860F5),
+          ),
+        ),
+
+        const SizedBox(height: 26),
+
+        const Text(
+          'No meetings yet',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFF252A3A),
+            fontSize: 21,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 25),
+          child: Text(
+            'Your calendar is clear. When you’re ready, '
+            'schedule a meeting to bring your team together.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF7A8193),
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../meetings/screens/meetings_screen.dart';
 import '../../../models/user.dart';
 import '../../../models/workspace.dart';
@@ -617,7 +618,12 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => MeetingsScreen(user: widget.user),
+                builder: (context) => MeetingsScreen(
+                  user: widget.user,
+                  workspaceId: workspaces.isNotEmpty
+                      ? workspaces.first.id
+                      : null,
+                ),
               ),
             );
           }
