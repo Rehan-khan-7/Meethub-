@@ -1,41 +1,48 @@
 import 'package:flutter/material.dart';
 
 import '../../../services/auth_service.dart';
-import 'signup_screen.dart';
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // Controllers
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // Auth service
   final AuthService authService = AuthService();
 
-  // UI states
   bool obscurePassword = true;
+  bool agreeToTerms = false;
   bool isLoading = false;
 
   @override
   void dispose() {
+    nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 
-  // Login function
-  Future<void> handleLogin() async {
+  Future<void> handleSignup() async {
+    final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      return;
+    }
+
+    if (!agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter email and password")),
+        const SnackBar(content: Text("Please agree to the terms")),
       );
       return;
     }
@@ -45,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final user = await authService.login(email, password);
+      final user = await authService.signup(name, email, password);
 
       if (!mounted) return;
 
@@ -58,9 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Login failed. Please check your credentials."),
-        ),
+        const SnackBar(content: Text("Signup failed. Please try again.")),
       );
     }
 
@@ -92,7 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Row(
                   children: [
-                    // Logo
                     Transform.rotate(
                       angle: 0.785398,
                       child: Container(
@@ -120,73 +124,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               // --------------------------------------------------
-              // ILLUSTRATION CARD
-              // --------------------------------------------------
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: Container(
-                  width: double.infinity,
-                  height: 140,
-                  padding: const EdgeInsets.only(left: 18, top: 18, bottom: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE7EEFF),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      // Text
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              "YOUR VIRTUAL HQ",
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2458F5),
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-
-                            SizedBox(height: 8),
-
-                            Text(
-                              "A little closer.\nA lot together.",
-                              style: TextStyle(
-                                fontSize: 21,
-                                height: 1.05,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1B2B48),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Illustration
-                      SizedBox(
-                        width: 140,
-                        height: 125,
-                        child: Image.asset(
-                          "assets/office.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // --------------------------------------------------
-              // WELCOME TEXT
+              // TITLE
               // --------------------------------------------------
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 22),
                 child: Text(
-                  "Welcome back",
+                  "Create your account",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -195,20 +138,71 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
 
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 22),
                 child: Text(
-                  "Log in and pick up where your team left off.",
+                  "Set up your workspace account and get started.",
                   style: TextStyle(fontSize: 13, color: Color(0xFF718096)),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
 
               // --------------------------------------------------
-              // EMAIL LABEL
+              // FULL NAME
+              // --------------------------------------------------
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 22),
+                child: Text(
+                  "Full name",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF26364F),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: TextField(
+                  controller: nameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: "Enter your name",
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 16,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2F5FF3),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // --------------------------------------------------
+              // EMAIL
               // --------------------------------------------------
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 22),
@@ -224,36 +218,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 7),
 
-              // --------------------------------------------------
-              // EMAIL FIELD
-              // --------------------------------------------------
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
                 child: TextField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
-
                   decoration: InputDecoration(
                     hintText: "Enter your email",
-
                     filled: true,
                     fillColor: Colors.white,
-
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 16,
                     ),
-
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
                     ),
-
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
                     ),
-
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
@@ -268,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
 
               // --------------------------------------------------
-              // PASSWORD LABEL
+              // PASSWORD
               // --------------------------------------------------
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 22),
@@ -284,54 +269,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 7),
 
-              // --------------------------------------------------
-              // PASSWORD FIELD
-              // --------------------------------------------------
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
                 child: TextField(
                   controller: passwordController,
-
                   obscureText: obscurePassword,
-
                   decoration: InputDecoration(
                     hintText: "Enter your password",
-
                     filled: true,
                     fillColor: Colors.white,
-
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 16,
                     ),
-
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
                           obscurePassword = !obscurePassword;
                         });
                       },
-
                       icon: Icon(
                         obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-
                         color: const Color(0xFF718096),
                         size: 21,
                       ),
                     ),
-
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
                     ),
-
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFDCE3EF)),
                     ),
-
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
@@ -343,63 +315,62 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
 
               // --------------------------------------------------
-              // FORGOT PASSWORD
+              // TERMS
               // --------------------------------------------------
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 22),
-                  child: TextButton(
-                    onPressed: () {
-                      // Forgot password later
-                    },
-
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: agreeToTerms,
+                      onChanged: (value) {
+                        setState(() {
+                          agreeToTerms = value ?? false;
+                        });
+                      },
+                      activeColor: const Color(0xFF2F5FF3),
                     ),
 
-                    child: const Text(
-                      "Forgot password?",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2458F5),
+                    const Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 12),
+                        child: Text(
+                          "I agree to the Terms of Service and Privacy Policy.",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 10),
 
               // --------------------------------------------------
-              // LOGIN BUTTON
+              // CREATE ACCOUNT
               // --------------------------------------------------
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
                 child: SizedBox(
                   width: double.infinity,
                   height: 51,
-
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : handleLogin,
-
+                    onPressed: isLoading ? null : handleSignup,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2F5FF3),
                       disabledBackgroundColor: const Color(0xFF9DB4F7),
-
                       elevation: 0,
-
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-
                     child: isLoading
                         ? const SizedBox(
                             width: 22,
@@ -410,7 +381,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           )
                         : const Text(
-                            "Log in",
+                            "Create account",
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -424,119 +395,23 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 22),
 
               // --------------------------------------------------
-              // DIVIDER + COMPANY ACCOUNT
-              // --------------------------------------------------
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: Row(
-                  children: [
-                    const Expanded(child: Divider(color: Color(0xFFDCE3EF))),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        "or use your company account",
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.blueGrey.shade400,
-                        ),
-                      ),
-                    ),
-
-                    const Expanded(child: Divider(color: Color(0xFFDCE3EF))),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // --------------------------------------------------
-              // SSO BUTTON
-              // --------------------------------------------------
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // SSO later
-                    },
-
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-
-                      side: const BorderSide(color: Color(0xFFDCE3EF)),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(
-                          Icons.business_outlined,
-                          size: 20,
-                          color: Color(0xFF718096),
-                        ),
-
-                        SizedBox(width: 9),
-
-                        Text(
-                          "Continue with SSO",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF26364F),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              // --------------------------------------------------
-              // SIGNUP
+              // LOGIN LINK
               // --------------------------------------------------
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "New to DeskVerse? ",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF718096),
-                        ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Already have an account? Log in",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2458F5),
                       ),
-
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignupScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign up",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF2458F5),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
