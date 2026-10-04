@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../meetings/screens/meetings_screen.dart';
 import '../../../models/user.dart';
 import '../../../models/workspace.dart';
 import '../../../models/room.dart';
@@ -612,6 +612,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
         currentIndex: 0,
 
+        onTap: (index) {
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MeetingsScreen(user: widget.user),
+              ),
+            );
+          }
+        },
+
         selectedItemColor: const Color(0xFF2879D8),
         unselectedItemColor: const Color(0xFF718096),
 
@@ -619,7 +630,6 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedFontSize: 10,
 
         backgroundColor: Colors.white,
-
         elevation: 8,
 
         items: const [
