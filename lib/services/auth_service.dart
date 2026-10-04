@@ -33,8 +33,28 @@ class AuthService {
   }
 
   Future<void> logout() async {
-  final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-  await prefs.remove('token');
-}
+    await prefs.remove('token');
+  }
+
+  Future<User> signup(String name, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/api/auth/signup'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'name': name, 'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString('token', data['token']);
+
+      return User.fromJson(data['user']);
+    } else {
+      throw Exception('Signup failed');
+    }
+  }
 }
