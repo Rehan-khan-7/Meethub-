@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../home/screens/home_screen.dart';
 import '../../../services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -56,11 +57,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Welcome ${user.name}")));
-
-      // Later:
-      // Navigate to HomeScreen here.
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     } catch (e) {
       if (!mounted) return;
 
