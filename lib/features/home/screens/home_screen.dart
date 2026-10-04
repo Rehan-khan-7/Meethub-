@@ -6,6 +6,7 @@ import '../../../models/room.dart';
 
 import '../../../services/workspace_service.dart';
 import '../../../services/room_service.dart';
+
 class HomeScreen extends StatefulWidget {
   final User user;
 
@@ -16,7 +17,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
   final WorkspaceService workspaceService = WorkspaceService();
   final RoomService roomService = RoomService();
 
@@ -24,6 +24,45 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Room> rooms = [];
   int totalPeople = 0;
   bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      final loadedWorkspaces = await workspaceService.getWorkspaces();
+
+      List<Room> loadedRooms = [];
+
+      if (loadedWorkspaces.isNotEmpty) {
+        loadedRooms = await roomService.getRooms(loadedWorkspaces.first.id);
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        workspaces = loadedWorkspaces;
+        rooms = loadedRooms;
+
+        if (loadedWorkspaces.isNotEmpty) {
+          totalPeople = loadedWorkspaces.first.members.length;
+        }
+
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
+      debugPrint('Home data error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,29 +369,362 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // =====================================================
+                    // WORKSPACE ANALYTICS
+                    // =====================================================
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F6F6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD0E8E8), width: 1),
-                ),
-                child: const Text(
-                  "Workspace Analytics",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF14263D),
-                  ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F6F6),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFD0E8E8),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                "Workspace Analytics",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF14263D),
+                                ),
+                              ),
+
+                              const Spacer(),
+
+                              const Icon(
+                                Icons.bar_chart,
+                                color: Color(0xFF3FA3A3),
+                                size: 20,
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          Row(
+                            children: [
+                              Container(
+                                width: 58,
+                                height: 58,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF3FA3A3),
+                                    width: 4,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    "96%",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF14263D),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 16),
+
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Attendance",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF718096),
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    "96%",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF14263D),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const Spacer(),
+
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Engagement",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF718096),
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    "High",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      color: Color(0xFF3FA3A3),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(width: 20),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // =====================================================
+                    // PENDING TASKS
+                    // =====================================================
+                    Row(
+                      children: [
+                        const Text(
+                          "Pending Tasks",
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: Color(0xFF14263D),
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEAF3FF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            "3",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF2879D8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDCE4DE)),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildTaskRow("Review Design Specs"),
+
+                          const Divider(height: 1, color: Color(0xFFDCE4DE)),
+
+                          _buildTaskRow("Complete Onboarding Call"),
+
+                          const Divider(height: 1, color: Color(0xFFDCE4DE)),
+
+                          _buildTaskRow("Q4 Planning Prep"),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // =====================================================
+                    // AI MEETING SUMMARIES
+                    // =====================================================
+                    Row(
+                      children: [
+                        const Text(
+                          "AI Meeting Summaries",
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: Color(0xFF14263D),
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF2879D8),
+                          size: 20,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDCE4DE)),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildSummaryRow("Q3 Sync Notes"),
+
+                          const Divider(height: 1, color: Color(0xFFDCE4DE)),
+
+                          _buildSummaryRow("Feature Brainstorm"),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-              // Baaki screen yahan banegi
             ],
           ),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+
+        currentIndex: 0,
+
+        selectedItemColor: const Color(0xFF2879D8),
+        unselectedItemColor: const Color(0xFF718096),
+
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
+
+        backgroundColor: Colors.white,
+
+        elevation: 8,
+
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: "Dashboard",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.meeting_room_outlined),
+            activeIcon: Icon(Icons.meeting_room),
+            label: "Rooms",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.videocam_outlined),
+            activeIcon: Icon(Icons.videocam),
+            label: "Meetings",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.check_box_outlined),
+            activeIcon: Icon(Icons.check_box),
+            label: "Tasks",
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz),
+            activeIcon: Icon(Icons.more_horiz),
+            label: "More",
+          ),
+        ],
+      ),
     );
   }
+}
+
+Widget _buildTaskRow(String title) {
+  return SizedBox(
+    height: 51,
+    child: Row(
+      children: [
+        const SizedBox(width: 13),
+
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFB8C7D9), width: 1.5),
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+
+        const SizedBox(width: 13),
+
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF14263D)),
+          ),
+        ),
+
+        const Icon(Icons.chevron_right, color: Color(0xFF718096), size: 20),
+
+        const SizedBox(width: 8),
+      ],
+    ),
+  );
+}
+
+Widget _buildSummaryRow(String title) {
+  return SizedBox(
+    height: 58,
+    child: Row(
+      children: [
+        const SizedBox(width: 13),
+
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF3FF),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: const Icon(
+            Icons.description_outlined,
+            color: Color(0xFF2879D8),
+            size: 18,
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF14263D)),
+          ),
+        ),
+
+        const Icon(Icons.chevron_right, color: Color(0xFF2879D8), size: 20),
+
+        const SizedBox(width: 8),
+      ],
+    ),
+  );
 }
