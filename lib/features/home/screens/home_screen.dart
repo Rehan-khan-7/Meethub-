@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-
+import '../../../models/user.dart';
 //import '../../../models/room.dart';
 import '../../../mock_data/rooms_data.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final User user;
+
+  const HomeScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +56,11 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 16),
 
                     // Profile
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 17,
                       backgroundColor: Colors.white,
                       child: Text(
-                        "SA",
+                        user.name.substring(0,2).toUpperCase(),
                         style: TextStyle(
                           color: Color(0xFF14263D),
                           fontSize: 10,
