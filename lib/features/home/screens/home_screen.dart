@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
-import '../../../models/user.dart';
-//import '../../../models/room.dart';
-import '../../../mock_data/rooms_data.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../../models/user.dart';
+import '../../../models/workspace.dart';
+import '../../../models/room.dart';
+
+import '../../../services/workspace_service.dart';
+import '../../../services/room_service.dart';
+class HomeScreen extends StatefulWidget {
   final User user;
 
   const HomeScreen({super.key, required this.user});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  
+  final WorkspaceService workspaceService = WorkspaceService();
+  final RoomService roomService = RoomService();
+
+  List<Workspace> workspaces = [];
+  List<Room> rooms = [];
+  int totalPeople = 0;
+  bool isLoading = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                       radius: 17,
                       backgroundColor: Colors.white,
                       child: Text(
-                        user.name.substring(0,2).toUpperCase(),
+                        widget.user.name.substring(0, 2).toUpperCase(),
                         style: TextStyle(
                           color: Color(0xFF14263D),
                           fontSize: 10,
@@ -172,7 +188,7 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 4),
 
                           Text(
-                            "${rooms.length} rooms · ${workspacePeople.length} people",
+                            "${rooms.length} rooms · ${totalPeople} people",
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF718096),

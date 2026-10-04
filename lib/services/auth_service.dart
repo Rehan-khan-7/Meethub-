@@ -1,14 +1,17 @@
 import 'dart:convert';
 
+import '../config/api_config.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 
 class AuthService {
+  static const String baseUrl = 'https://rants-remodeler-agent.ngrok-free.dev';
   Future<User> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/auth/login'),
+      Uri.parse('${ApiConfig.baseUrl}/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
@@ -40,7 +43,7 @@ class AuthService {
 
   Future<User> signup(String name, String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/auth/signup'),
+      Uri.parse('${ApiConfig.baseUrl}/api/auth/signup'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name, 'email': email, 'password': password}),
     );
