@@ -28,6 +28,16 @@ class Room {
       members: List<String>.from(json['members'] ?? []),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'workspaceId': workspaceId,
+      'name': name,
+      'description': description,
+      'type': type,
+      'createdBy': createdBy,
+      'members': members,
+    };
+  }
 }
-
-

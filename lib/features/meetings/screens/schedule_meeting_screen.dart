@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../models/room.dart';
-import '../../../services/room_service.dart';
+import '../../rooms/data/room_repository.dart';
 import '../../../models/meeting.dart';
 import '../../../services/meeting_service.dart';
 
@@ -19,11 +19,11 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
-  final RoomService roomService = RoomService();
+  final RoomRepository roomRepository = RoomRepository();
 
   Future<void> loadRooms() async {
     try {
-      final data = await roomService.getRooms(widget.workspaceId);
+      final data = await roomRepository.getRooms(widget.workspaceId);
 
       if (!mounted) return;
 

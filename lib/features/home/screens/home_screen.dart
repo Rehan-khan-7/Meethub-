@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
+import '../../rooms/screens/create_room_screen.dart';
 import '../../../widgets/deskverse_header.dart';
 import '../../rooms/screens/rooms_screen.dart';
 import '../../meetings/screens/meetings_screen.dart';
 import '../../../models/user.dart';
-import '../../../models/workspace.dart';
+//import '../../../models/workspace.dart';
 import '../../../models/room.dart';
-
-import '../../../services/workspace_service.dart';
-import '../../../services/room_service.dart';
+import '../../rooms/data/room_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   final User user;
@@ -19,50 +19,72 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final WorkspaceService workspaceService = WorkspaceService();
-  final RoomService roomService = RoomService();
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
+  final RoomRepository roomRepository = RoomRepository();
 
-  List<Workspace> workspaces = [];
+  final String currentWorkspaceId = 'local-workspace';
+
   List<Room> rooms = [];
+
   int totalPeople = 0;
+
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     loadData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final route = ModalRoute.of(context);
+
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPopNext() {
+    // Rooms screen se wapas Dashboard par aane par
+    // latest rooms dobara load honge.
+    loadData();
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
   Future<void> loadData() async {
     try {
-      final loadedWorkspaces = await workspaceService.getWorkspaces();
+      final loadedRooms = await roomRepository.getRooms(currentWorkspaceId);
 
-      List<Room> loadedRooms = [];
+      final people = <String>{};
 
-      if (loadedWorkspaces.isNotEmpty) {
-        loadedRooms = await roomService.getRooms(loadedWorkspaces.first.id);
+      for (final room in loadedRooms) {
+        people.addAll(room.members);
       }
 
       if (!mounted) return;
 
       setState(() {
-        workspaces = loadedWorkspaces;
         rooms = loadedRooms;
-
-        if (loadedWorkspaces.isNotEmpty) {
-          totalPeople = loadedWorkspaces.first.members.length;
-        }
-
+        totalPeople = people.length;
         isLoading = false;
       });
     } catch (e) {
+      debugPrint('Home data error: $e');
+
       if (!mounted) return;
 
       setState(() {
         isLoading = false;
       });
-
-      debugPrint('Home data error: $e');
     }
   }
 
@@ -291,8 +313,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: TextButton.icon(
-                                  onPressed: () {
-                                    // Add Room functionality baad mein
+                                  onPressed: () async {
+                                    final Room? createdRoom =
+                                        await Navigator.push<Room>(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CreateRoomScreen(
+                                                  workspaceId:
+                                                      currentWorkspaceId,
+                                                ),
+                                          ),
+                                        );
+
+                                    if (createdRoom == null || !mounted) return;
+
+                                    setState(() {
+                                      rooms.insert(0, createdRoom);
+
+                                      final people = <String>{};
+
+                                      for (final room in rooms) {
+                                        people.addAll(room.members);
+                                      }
+
+                                      totalPeople = people.length;
+                                    });
                                   },
                                   icon: const Icon(
                                     Icons.add,
@@ -568,9 +614,7 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(
                 builder: (context) => RoomsScreen(
                   user: widget.user,
-                  workspaceId: workspaces.isNotEmpty
-                      ? workspaces.first.id
-                      : null,
+                  workspaceId: currentWorkspaceId,
                 ),
               ),
             );
@@ -582,9 +626,7 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(
                 builder: (context) => MeetingsScreen(
                   user: widget.user,
-                  workspaceId: workspaces.isNotEmpty
-                      ? workspaces.first.id
-                      : null,
+                  workspaceId: currentWorkspaceId,
                 ),
               ),
             );

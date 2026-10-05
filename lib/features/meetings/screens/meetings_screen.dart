@@ -20,6 +20,8 @@ class MeetingsScreen extends StatefulWidget {
 class _MeetingsScreenState extends State<MeetingsScreen> {
   final MeetingService meetingService = MeetingService();
 
+  late String currentWorkspaceId;
+
   List<Meeting> meetings = [];
 
   bool isLoading = true;
@@ -28,6 +30,9 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   @override
   void initState() {
     super.initState();
+
+    currentWorkspaceId = widget.workspaceId ?? 'local-workspace';
+
     loadMeetings();
   }
 
@@ -261,26 +266,13 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       height: 50,
       child: ElevatedButton.icon(
         onPressed: () async {
-          if (widget.workspaceId == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Workspace is required to schedule a meeting'),
-              ),
-            );
-            return;
-          }
-
-          // Temporary: backend requires roomId.
-          // We will get the real room from workspace data
-          // in the next step.
           final meeting = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  ScheduleMeetingScreen(workspaceId: widget.workspaceId!),
+                  ScheduleMeetingScreen(workspaceId: currentWorkspaceId),
             ),
           );
-
           if (meeting is Meeting) {
             setState(() {
               meetings.insert(0, meeting);
