@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-
+import '../data/meeting_repository.dart';
 import '../../../models/meeting.dart';
 
 class MeetingDetailsScreen extends StatelessWidget {
   final Meeting meeting;
   final String roomName;
-
+  static MeetingRepository meetingRepository = MeetingRepository();
+  
   const MeetingDetailsScreen({
     super.key,
     required this.meeting,
@@ -61,6 +62,42 @@ class MeetingDetailsScreen extends StatelessWidget {
     return '${minutes}m';
   }
 
+  Future<void> _deleteMeeting(BuildContext context) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Meeting?'),
+          content: const Text(
+            'This meeting will be removed from your meetings.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) return;
+
+    await meetingRepository.deleteMeeting(meeting.id);
+
+    if (!context.mounted) return;
+
+    Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +120,15 @@ class MeetingDetailsScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Color(0xFFE05252)),
+            onPressed: () => _deleteMeeting(context),
+          ),
+        ],
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

@@ -1,5 +1,5 @@
 import '../../../models/meeting.dart';
-
+import 'package:flutter/foundation.dart';
 class MeetingRepository {
   static final List<Meeting> _meetings = [];
 
@@ -7,6 +7,12 @@ class MeetingRepository {
     return _meetings
         .where((meeting) => meeting.workspaceId == workspaceId)
         .toList();
+  }
+
+  Future<void> deleteMeeting(String meetingId) async {
+
+    _meetings.removeWhere((meeting) => meeting.id == meetingId);
+
   }
 
   Future<Meeting> createMeeting({

@@ -71,16 +71,22 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     }
   }
 
-  Future<String> getRoomName(String roomId) async {
-    final rooms = await roomRepository.getRooms(currentWorkspaceId);
+  Future<void> openMeetingDetails(Meeting meeting) async {
+    final deleted = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MeetingDetailsScreen(
+          meeting: meeting,
+          roomName: roomNames[meeting.roomId] ?? 'Unknown Room',
+        ),
+      ),
+    );
 
-    for (final room in rooms) {
-      if (room.id == roomId) {
-        return room.name;
-      }
+    if (!mounted) return;
+
+    if (deleted == true) {
+      await loadMeetings();
     }
-
-    return 'Unknown Room';
   }
 
   List<Meeting> get filteredMeetings {
@@ -271,15 +277,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MeetingDetailsScreen(
-              meeting: meeting,
-              roomName: roomNames[meeting.roomId] ?? 'Unknown Room',
-            ),
-          ),
-        );
+        openMeetingDetails(meeting);
       },
       child: Container(
         padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
