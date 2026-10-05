@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'room_chat_screen.dart';
+import '../../meetings/screens/meeting_lobby_screen.dart';
 import '../../../models/room.dart';
+import '../../../models/meeting.dart';
 
 class RoomWorkspaceScreen extends StatefulWidget {
   final Room room;
@@ -230,11 +232,28 @@ class _RoomWorkspaceScreenState extends State<RoomWorkspaceScreen> {
                           icon: Icons.videocam_outlined,
                           label: 'Start Meeting',
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Meeting service will be connected next.',
-                                ),
+                            final meeting = Meeting(
+                              id: 'local-meeting',
+                              workspaceId: room.workspaceId,
+                              roomId: room.id,
+                              title: '${room.name} Meeting',
+                              description: room.description,
+                              createdBy: room.createdBy,
+                              participants: room.members,
+                              startTime: DateTime.now(),
+                              endTime: DateTime.now().add(
+                                const Duration(hours: 1),
+                              ),
+                              meetingCode: 'LOCAL-MEETING',
+                              meetingLink: '',
+                              status: 'live',
+                            );
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    MeetingLobbyScreen(meeting: meeting),
                               ),
                             );
                           },
@@ -248,11 +267,11 @@ class _RoomWorkspaceScreenState extends State<RoomWorkspaceScreen> {
                           icon: Icons.chat_bubble_outline,
                           label: 'Chat',
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Room chat will be connected next.',
-                                ),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RoomChatScreen(room: room),
                               ),
                             );
                           },
