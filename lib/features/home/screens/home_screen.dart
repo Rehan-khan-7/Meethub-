@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/deskverse_header.dart';
+import '../../rooms/screens/rooms_screen.dart';
 import '../../meetings/screens/meetings_screen.dart';
 import '../../../models/user.dart';
 import '../../../models/workspace.dart';
@@ -74,61 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               // Header
-              Container(
-                width: double.infinity,
-                height: 72,
-                color: const Color(0xFF14263D),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    // Meethub
-                    const Text(
-                      "◯ Workverse",
-                      style: TextStyle(color: Colors.white, fontSize: 22),
-                    ),
-
-                    const SizedBox(width: 14),
-
-                    // Vertical line
-                    Container(height: 25, width: 1, color: Colors.white30),
-
-                    const SizedBox(width: 14),
-
-                    // Company
-                    const Text(
-                      "Acme Corp HQ⌄",
-                      style: TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-
-                    const Spacer(),
-
-                    // Notification
-                    const Icon(
-                      Icons.notifications_none_outlined,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Profile
-                    CircleAvatar(
-                      radius: 17,
-                      backgroundColor: Colors.white,
-                      child: Text(
-                        widget.user.name.substring(0, 2).toUpperCase(),
-                        style: TextStyle(
-                          color: Color(0xFF14263D),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-                  ],
-                ),
-              ),
+              const DeskVerseHeader(workspaceName: 'Acme Corp HQ'),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -614,6 +562,20 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: 0,
 
         onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RoomsScreen(
+                  user: widget.user,
+                  workspaceId: workspaces.isNotEmpty
+                      ? workspaces.first.id
+                      : null,
+                ),
+              ),
+            );
+          }
+
           if (index == 2) {
             Navigator.push(
               context,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/deskverse_header.dart';
+import '../../rooms/screens/rooms_screen.dart';
 import 'schedule_meeting_screen.dart';
 import '../../../models/meeting.dart';
 import '../../../models/user.dart';
@@ -151,7 +153,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            const DeskVerseHeader(workspaceName: 'Acme Corp HQ'),
 
             Expanded(
               child: SingleChildScrollView(
@@ -196,74 +198,6 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       ),
 
       bottomNavigationBar: _buildBottomNavigation(),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      height: 112,
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
-      color: const Color(0xFF202638),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Icon(
-                  Icons.diamond_outlined,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              const Text(
-                'DeskVerse',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 23,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const Spacer(),
-
-              const Icon(
-                Icons.notifications_none,
-                color: Colors.white,
-                size: 27,
-              ),
-
-              const SizedBox(width: 20),
-
-              const Icon(Icons.menu, color: Colors.white, size: 27),
-            ],
-          ),
-
-          const SizedBox(height: 5),
-
-          const Row(
-            children: [
-              Text(
-                'Acme Corp HQ',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-
-              SizedBox(width: 4),
-
-              Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 15),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -551,7 +485,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_month_outlined),
-          activeIcon: Icon(Icons.calendar_month),
+          activeIcon: Icon(Icons.videocam),
           label: 'Meetings',
         ),
         BottomNavigationBarItem(
@@ -569,7 +503,22 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       // 👇 YAHAN ADD KARO
       onTap: (index) {
         if (index == 0) {
-          Navigator.pop(context);
+          Navigator.popUntil(context, (route) => route.isFirst);
+          return;
+        }
+
+        if (index == 1) {
+          Navigator.popUntil(context, (route) => route.isFirst);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoomsScreen(
+                user: widget.user,
+                workspaceId: widget.workspaceId,
+              ),
+            ),
+          );
         }
       },
     );
