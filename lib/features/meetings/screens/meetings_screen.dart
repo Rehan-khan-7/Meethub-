@@ -4,7 +4,7 @@ import '../../rooms/data/room_repository.dart';
 import '../../../widgets/deskverse_header.dart';
 import '../../../models/meeting.dart';
 import '../../../models/user.dart';
-
+import 'meeting_details_screen.dart';
 import '../../rooms/screens/rooms_screen.dart';
 import 'schedule_meeting_screen.dart';
 import '../data/meeting_repository.dart';
@@ -117,7 +117,6 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
     return '${minutes}m';
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -270,156 +269,179 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   Widget _buildMeetingCard(Meeting meeting) {
     final isActive = meeting.status == 'active';
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFD7DAE7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  meeting.title,
-                  style: const TextStyle(
-                    color: Color(0xFF252A3A),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const Icon(Icons.more_horiz, color: Color(0xFF7B8191)),
-            ],
-          ),
-
-          if (meeting.participants.isNotEmpty) ...[
-            const SizedBox(height: 10),
-
-            SizedBox(
-              height: 30,
-              child: Row(
-                children: List.generate(
-                  meeting.participants.length > 6
-                      ? 6
-                      : meeting.participants.length,
-                  (index) {
-                    return Align(
-                      widthFactor: 0.72,
-                      child: CircleAvatar(
-                        radius: 15,
-                        backgroundColor:
-                            Colors.primaries[index % Colors.primaries.length],
-                        child: Text(
-                          meeting.participants[index]
-                              .substring(0, 1)
-                              .toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MeetingDetailsScreen(
+              meeting: meeting,
+              roomName: roomNames[meeting.roomId] ?? 'Unknown Room',
             ),
-          ],
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              const Icon(Icons.access_time, size: 17, color: Color(0xFF7B8191)),
-
-              const SizedBox(width: 7),
-
-              Text(
-                'Today, ${formatTime(meeting.startTime)} – '
-                '${formatTime(meeting.endTime)} '
-                '(${formatDuration(meeting.startTime, meeting.endTime)})',
-                style: const TextStyle(color: Color(0xFF73798C), fontSize: 12),
-              ),
-            ],
           ),
-
-          const SizedBox(height: 7),
-
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 17,
-                color: Color(0xFF7B8191),
-              ),
-
-              const SizedBox(width: 7),
-
-              Text(
-                'Location: ${roomNames[meeting.roomId] ?? 'Unknown Room'}',
-                style: const TextStyle(color: Color(0xFF73798C), fontSize: 12),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              if (isActive) ...[
-                const Icon(Icons.circle, size: 7, color: Color(0xFF29A36A)),
-
-                const SizedBox(width: 5),
-
-                const Text(
-                  'Recurring (Weekly)',
-                  style: TextStyle(color: Color(0xFF29A36A), fontSize: 11),
-                ),
-              ] else
-                const Text(
-                  'Not started',
-                  style: TextStyle(color: Color(0xFF7B8191), fontSize: 11),
-                ),
-
-              const Spacer(),
-
-              SizedBox(
-                width: 82,
-                height: 40,
-                child: ElevatedButton(
-                  onPressed: isActive
-                      ? () {
-                          // Join meeting will be implemented
-                          // with WebRTC later.
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D5FEF),
-                    disabledBackgroundColor: const Color(0xFFC7C8CE),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                  ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFD7DAE7)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
                   child: Text(
-                    isActive ? 'Join Now' : 'Join',
+                    meeting.title,
                     style: const TextStyle(
-                      fontSize: 12,
+                      color: Color(0xFF252A3A),
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
+
+                const Icon(Icons.more_horiz, color: Color(0xFF7B8191)),
+              ],
+            ),
+
+            if (meeting.participants.isNotEmpty) ...[
+              const SizedBox(height: 10),
+
+              SizedBox(
+                height: 30,
+                child: Row(
+                  children: List.generate(
+                    meeting.participants.length > 6
+                        ? 6
+                        : meeting.participants.length,
+                    (index) {
+                      return Align(
+                        widthFactor: 0.72,
+                        child: CircleAvatar(
+                          radius: 15,
+                          backgroundColor:
+                              Colors.primaries[index % Colors.primaries.length],
+                          child: Text(
+                            meeting.participants[index]
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ],
-          ),
-        ],
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  size: 17,
+                  color: Color(0xFF7B8191),
+                ),
+
+                const SizedBox(width: 7),
+
+                Text(
+                  'Today, ${formatTime(meeting.startTime)} – '
+                  '${formatTime(meeting.endTime)} '
+                  '(${formatDuration(meeting.startTime, meeting.endTime)})',
+                  style: const TextStyle(
+                    color: Color(0xFF73798C),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 7),
+
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 17,
+                  color: Color(0xFF7B8191),
+                ),
+
+                const SizedBox(width: 7),
+
+                Text(
+                  'Location: ${roomNames[meeting.roomId] ?? 'Unknown Room'}',
+                  style: const TextStyle(
+                    color: Color(0xFF73798C),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: [
+                if (isActive) ...[
+                  const Icon(Icons.circle, size: 7, color: Color(0xFF29A36A)),
+
+                  const SizedBox(width: 5),
+
+                  const Text(
+                    'Recurring (Weekly)',
+                    style: TextStyle(color: Color(0xFF29A36A), fontSize: 11),
+                  ),
+                ] else
+                  const Text(
+                    'Not started',
+                    style: TextStyle(color: Color(0xFF7B8191), fontSize: 11),
+                  ),
+
+                const Spacer(),
+
+                SizedBox(
+                  width: 82,
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: isActive
+                        ? () {
+                            // Join meeting will be implemented
+                            // with WebRTC later.
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D5FEF),
+                      disabledBackgroundColor: const Color(0xFFC7C8CE),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                    ),
+                    child: Text(
+                      isActive ? 'Join Now' : 'Join',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
