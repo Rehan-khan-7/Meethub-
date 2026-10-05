@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../models/room.dart';
 import '../../rooms/data/room_repository.dart';
 import '../../../models/meeting.dart';
-import '../../../services/meeting_service.dart';
+
+import '../../rooms/data/room_repository.dart';
+import '../data/meeting_repository.dart';
 
 class ScheduleMeetingScreen extends StatefulWidget {
   final String workspaceId;
@@ -15,7 +17,7 @@ class ScheduleMeetingScreen extends StatefulWidget {
 }
 
 class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
-  final MeetingService meetingService = MeetingService();
+  final MeetingRepository meetingRepository = MeetingRepository();
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -153,7 +155,7 @@ class _ScheduleMeetingScreenState extends State<ScheduleMeetingScreen> {
     });
 
     try {
-      final Meeting meeting = await meetingService.createMeeting(
+      final Meeting meeting = await meetingRepository.createMeeting(
         workspaceId: widget.workspaceId,
         roomId: selectedRoom!.id,
         title: titleController.text.trim(),

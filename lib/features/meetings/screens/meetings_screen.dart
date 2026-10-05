@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../widgets/deskverse_header.dart';
-import '../../rooms/screens/rooms_screen.dart';
-import 'schedule_meeting_screen.dart';
 import '../../../models/meeting.dart';
 import '../../../models/user.dart';
-import '../../../services/meeting_service.dart';
+
+import '../../rooms/screens/rooms_screen.dart';
+import 'schedule_meeting_screen.dart';
+import '../data/meeting_repository.dart';
 
 class MeetingsScreen extends StatefulWidget {
   final User user;
@@ -18,7 +19,7 @@ class MeetingsScreen extends StatefulWidget {
 }
 
 class _MeetingsScreenState extends State<MeetingsScreen> {
-  final MeetingService meetingService = MeetingService();
+  final MeetingRepository meetingRepository = MeetingRepository();
 
   late String currentWorkspaceId;
 
@@ -37,16 +38,10 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   }
 
   Future<void> loadMeetings() async {
-    if (widget.workspaceId == null) {
-      setState(() {
-        meetings = [];
-        isLoading = false;
-      });
-      return;
-    }
-
     try {
-      final data = await meetingService.getMeetings(widget.workspaceId!);
+      final data = await meetingRepository.getMeetings(currentWorkspaceId);
+
+      if (!mounted) return;
 
       setState(() {
         meetings = data;
@@ -55,6 +50,8 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     } catch (e) {
       debugPrint('Meeting error: $e');
 
+      if (!mounted) return;
+
       setState(() {
         meetings = [];
         isLoading = false;
@@ -62,56 +59,6 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     }
   }
 
-  List<Meeting> _mockMeetings() {
-    final now = DateTime.now();
-
-    return [
-      Meeting(
-        id: '1',
-        workspaceId: 'workspace',
-        roomId: 'room',
-        title: 'Product Roadmap Sync',
-        description: '',
-        createdBy: widget.user.id,
-        participants: ['A', 'B', 'C', 'D', 'E', 'F'],
-        startTime: DateTime(now.year, now.month, now.day, 14, 0),
-        endTime: DateTime(now.year, now.month, now.day, 15, 0),
-        meetingCode: 'ROADMAP',
-        meetingLink: 'https://vow.app/meeting/roadmap',
-        status: 'active',
-      ),
-
-      Meeting(
-        id: '2',
-        workspaceId: 'workspace',
-        roomId: 'room',
-        title: 'Engineering Standup',
-        description: '',
-        createdBy: widget.user.id,
-        participants: [],
-        startTime: DateTime(now.year, now.month, now.day, 16, 0),
-        endTime: DateTime(now.year, now.month, now.day, 16, 30),
-        meetingCode: 'ENGINEER',
-        meetingLink: 'https://vow.app/meeting/engineering',
-        status: 'scheduled',
-      ),
-
-      Meeting(
-        id: '3',
-        workspaceId: 'workspace',
-        roomId: 'room',
-        title: 'Marketing Strategy Session',
-        description: '',
-        createdBy: widget.user.id,
-        participants: [],
-        startTime: DateTime(now.year, now.month, now.day, 11, 0),
-        endTime: DateTime(now.year, now.month, now.day, 12, 0),
-        meetingCode: 'MARKETING',
-        meetingLink: 'https://vow.app/meeting/marketing',
-        status: 'scheduled',
-      ),
-    ];
-  }
 
   List<Meeting> get filteredMeetings {
     if (searchQuery.trim().isEmpty) {
