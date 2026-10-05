@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../rooms/data/room_repository.dart';
 import '../../../widgets/deskverse_header.dart';
 import '../../../models/meeting.dart';
 import '../../../models/user.dart';
@@ -20,9 +21,9 @@ class MeetingsScreen extends StatefulWidget {
 
 class _MeetingsScreenState extends State<MeetingsScreen> {
   final MeetingRepository meetingRepository = MeetingRepository();
-
+  final RoomRepository roomRepository = RoomRepository();
   late String currentWorkspaceId;
-
+  final Map<String, String> roomNames = {};
   List<Meeting> meetings = [];
 
   bool isLoading = true;
@@ -40,11 +41,21 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   Future<void> loadMeetings() async {
     try {
       final data = await meetingRepository.getMeetings(currentWorkspaceId);
+      final rooms = await roomRepository.getRooms(currentWorkspaceId);
+
+      final names = <String, String>{};
+
+      for (final room in rooms) {
+        names[room.id] = room.name;
+      }
 
       if (!mounted) return;
 
       setState(() {
         meetings = data;
+        roomNames
+          ..clear()
+          ..addAll(names);
         isLoading = false;
       });
     } catch (e) {
@@ -54,11 +65,23 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
       setState(() {
         meetings = [];
+        roomNames.clear();
         isLoading = false;
       });
     }
   }
 
+  Future<String> getRoomName(String roomId) async {
+    final rooms = await roomRepository.getRooms(currentWorkspaceId);
+
+    for (final room in rooms) {
+      if (room.id == roomId) {
+        return room.name;
+      }
+    }
+
+    return 'Unknown Room';
+  }
 
   List<Meeting> get filteredMeetings {
     if (searchQuery.trim().isEmpty) {
@@ -94,6 +117,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
     return '${minutes}m';
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -337,9 +361,9 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
 
               const SizedBox(width: 7),
 
-              const Text(
-                'Location: Design Studio (Virtual)',
-                style: TextStyle(color: Color(0xFF73798C), fontSize: 12),
+              Text(
+                'Location: ${roomNames[meeting.roomId] ?? 'Unknown Room'}',
+                style: const TextStyle(color: Color(0xFF73798C), fontSize: 12),
               ),
             ],
           ),
