@@ -1,66 +1,195 @@
-class PollRepository {
-  static const bool useBackend = false;
+import '../../../models/meeting.dart';
+import '../../../models/room.dart';
+import '../../meetings/data/meeting_repository.dart';
+import '../../rooms/data/room_repository.dart';
+import '../../tasks/data/task_repository.dart';
 
-  static final List<Map<String, dynamic>> _polls = [
-    {
-      'id': 'poll-1',
-      'title': 'Preferred day for Q4 All-Hands?',
-      'createdBy': 'Mike',
-      'votes': 45,
-      'closesIn': '2 days',
-      'question': 'Which day of the week works best for you?',
-      'options': [
-        {'text': 'Wednesday', 'votes': 62},
-        {'text': 'Thursday', 'votes': 38},
-        {'text': 'Friday', 'votes': 24},
-      ],
-      'selectedOption': null,
-      'status': 'active',
-    },
-    {
-      'id': 'poll-2',
-      'title': 'Workspace Lunch Catering - October',
-      'createdBy': 'Sarah',
-      'votes': 32,
-      'closesIn': '4 days',
-      'question': 'What cuisine do you prefer for the monthly lunch?',
-      'options': [
-        {'text': 'Mediterranean', 'votes': 62},
-        {'text': 'Mexican', 'votes': 38},
-        {'text': 'Asian Fusion', 'votes': 24},
-      ],
-      'selectedOption': null,
-      'status': 'active',
-    },
-  ];
+class AnalyticsRepository {
+  final MeetingRepository meetingRepository = MeetingRepository();
+  final RoomRepository roomRepository = RoomRepository();
+  final TaskRepository taskRepository = TaskRepository();
 
-  List<Map<String, dynamic>> getPolls() {
-    return _polls;
+  Future<Map<String, dynamic>> getAnalytics(
+    String workspaceId,
+  ) async {
+    final meetings =
+        await meetingRepository.getMeetings(workspaceId);
+
+    final rooms =
+        await roomRepository.getRooms(workspaceId);
+
+    final tasks =
+        taskRepository.getTasks();
+
+    return {
+      'totalMeetingMinutes':
+          _calculateTotalMeetingMinutes(meetings),
+
+      'activeUsers':
+          _calculateActiveUsers(rooms, meetings),
+
+      'averageMeetingDuration':
+          _calculateAverageMeetingDuration(meetings),
+
+      'usageTrends':
+          _calculateUsageTrends(meetings),
+
+      'topRooms':
+          _calculateTopRooms(rooms, meetings),
+
+      'engagementScore':
+          _calculateEngagementScore(tasks),
+
+      'totalMeetings':
+          meetings.length,
+
+      'totalRooms':
+          rooms.length,
+
+      'totalTasks':
+          tasks.length,
+
+      'completedTasks':
+          tasks.where(
+            (task) => task['completed'] == true,
+          ).length,
+    };
   }
 
-  void vote(String pollId, int optionIndex) {
-    final poll = _polls.firstWhere(
-      (poll) => poll['id'] == pollId,
+  int _calculateTotalMeetingMinutes(
+    List<Meeting> meetings,
+  ) {
+    int totalMinutes = 0;
+
+    for (final meeting in meetings) {
+      final duration =
+          meeting.endTime.difference(
+        meeting.startTime,
+      ).inMinutes;
+
+      if (duration > 0) {
+        totalMinutes += duration;
+      }
+    }
+
+    return totalMinutes;
+  }
+
+  int _calculateActiveUsers(
+    List<Room> rooms,
+    List<Meeting> meetings,
+  ) {
+    final users = <String>{};
+
+    // Users present in rooms
+    for (final room in rooms) {
+      users.addAll(room.members);
+    }
+
+    // Users participating in meetings
+    for (final meeting in meetings) {
+      users.addAll(meeting.participants);
+
+      if (meeting.createdBy.isNotEmpty) {
+        users.add(meeting.createdBy);
+      }
+    }
+
+    return users.length;
+  }
+
+  int _calculateAverageMeetingDuration(
+    List<Meeting> meetings,
+  ) {
+    if (meetings.isEmpty) {
+      return 0;
+    }
+
+    final totalMinutes =
+        _calculateTotalMeetingMinutes(meetings);
+
+    return (totalMinutes / meetings.length).round();
+  }
+
+  List<Map<String, dynamic>> _calculateUsageTrends(
+    List<Meeting> meetings,
+  ) {
+    final days = <String>[
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
+
+    final counts = <String, int>{
+      for (final day in days) day: 0,
+    };
+
+    for (final meeting in meetings) {
+      final weekday =
+          days[meeting.startTime.weekday - 1];
+
+      counts[weekday] =
+          (counts[weekday] ?? 0) + 1;
+    }
+
+    return days.map((day) {
+      return {
+        'day': day,
+        'value': counts[day] ?? 0,
+      };
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _calculateTopRooms(
+    List<Room> rooms,
+    List<Meeting> meetings,
+  ) {
+    final roomUsage = <String, int>{};
+
+    for (final meeting in meetings) {
+      roomUsage[meeting.roomId] =
+          (roomUsage[meeting.roomId] ?? 0) + 1;
+    }
+
+    final result = <Map<String, dynamic>>[];
+
+    for (final room in rooms) {
+      result.add({
+        'roomId': room.id,
+        'roomName': room.name,
+        'usage': roomUsage[room.id] ?? 0,
+      });
+    }
+
+    result.sort(
+      (a, b) =>
+          (b['usage'] as int)
+              .compareTo(a['usage'] as int),
     );
 
-    poll['selectedOption'] = optionIndex;
-
-    final options = poll['options'] as List<dynamic>;
-    final selectedOption = options[optionIndex] as Map<String, dynamic>;
-
-    selectedOption['votes'] =
-        (selectedOption['votes'] as int) + 1;
-
-    poll['votes'] = (poll['votes'] as int) + 1;
+    return result;
   }
 
-  void addPoll(Map<String, dynamic> poll) {
-    _polls.add(poll);
-  }
+  int _calculateEngagementScore(
+    List<Map<String, dynamic>> tasks,
+  ) {
+    if (tasks.isEmpty) {
+      return 0;
+    }
 
-  void deletePoll(String pollId) {
-    _polls.removeWhere(
-      (poll) => poll['id'] == pollId,
-    );
+    final completedTasks =
+        tasks.where(
+          (task) => task['completed'] == true,
+        ).length;
+
+    return (
+      completedTasks /
+      tasks.length *
+      100
+    ).round();
   }
 }

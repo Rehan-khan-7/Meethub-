@@ -381,7 +381,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AnalyticsScreen(),
+                            builder: (context) => AnalyticsScreen(
+                              workspaceId: currentWorkspaceId,
+                            ),
                           ),
                         );
                       },
