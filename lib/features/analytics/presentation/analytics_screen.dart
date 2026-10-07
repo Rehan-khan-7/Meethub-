@@ -11,6 +11,100 @@ class AnalyticsScreen extends StatefulWidget {
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
+class _UsageTrendPainter extends CustomPainter {
+  final List<double> values;
+  final double maxValue;
+
+  _UsageTrendPainter({required this.values, required this.maxValue});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+
+    final paint = Paint()
+      ..color = const Color(0xFF2879D8)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFFEAF3FF)
+      ..style = PaintingStyle.fill;
+
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE8EDF2)
+      ..strokeWidth = 1;
+
+    // Horizontal grid lines
+    for (int i = 0; i < 4; i++) {
+      final y = size.height * i / 3;
+
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    if (values.length == 1) {
+      final y = size.height - (values.first / maxValue) * size.height;
+
+      final point = Offset(size.width / 2, y);
+
+      canvas.drawCircle(point, 5, Paint()..color = const Color(0xFF2879D8));
+
+      return;
+    }
+
+    final points = <Offset>[];
+
+    for (int i = 0; i < values.length; i++) {
+      final x = size.width * i / (values.length - 1);
+
+      final normalized = values[i] / maxValue;
+
+      final y = size.height - normalized * size.height;
+
+      points.add(Offset(x, y));
+    }
+
+    // Area below line
+    final areaPath = Path()..moveTo(points.first.dx, size.height);
+
+    for (final point in points) {
+      areaPath.lineTo(point.dx, point.dy);
+    }
+
+    areaPath.lineTo(points.last.dx, size.height);
+
+    areaPath.close();
+
+    canvas.drawPath(areaPath, fillPaint);
+
+    // Line
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+
+    for (int i = 1; i < points.length; i++) {
+      linePath.lineTo(points[i].dx, points[i].dy);
+    }
+
+    canvas.drawPath(linePath, paint);
+
+    // Points
+    final pointPaint = Paint()
+      ..color = const Color(0xFF2879D8)
+      ..style = PaintingStyle.fill;
+
+    for (final point in points) {
+      canvas.drawCircle(point, 3.5, pointPaint);
+
+      canvas.drawCircle(point, 2, Paint()..color = Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _UsageTrendPainter oldDelegate) {
+    return oldDelegate.values != values || oldDelegate.maxValue != maxValue;
+  }
+}
+
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final AnalyticsRepository analyticsRepository = AnalyticsRepository();
 
@@ -263,27 +357,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       return _buildEmptyCard('No meeting activity yet.');
     }
 
-    int maxValue = 1;
+    final values = trends
+        .map((item) => (item['value'] as num).toDouble())
+        .toList();
 
-    for (final item in trends) {
-      final value = item['value'] as int;
-
-      if (value > maxValue) {
-        maxValue = value;
-      }
-    }
+    final maxValue = values.isEmpty
+        ? 1.0
+        : values.reduce((a, b) => a > b ? a : b);
 
     return Container(
-      height: 230,
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-
+      height: 210,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFD8E0DA)),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,52 +382,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             style: TextStyle(fontSize: 12, color: Color(0xFF718096)),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 6),
 
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: trends.map((item) {
-                final value = item['value'] as int;
-
-                final height = value == 0 ? 4.0 : 105 * (value / maxValue);
-
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      value.toString(),
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    Container(
-                      width: 25,
-                      height: height,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3FA3A3),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      item['day'].toString(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+            child: CustomPaint(
+              painter: _UsageTrendPainter(
+                values: values,
+                maxValue: maxValue == 0 ? 1 : maxValue,
+              ),
+              child: const SizedBox.expand(),
             ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: trends.map((item) {
+              return Text(
+                item['day'].toString(),
+                style: const TextStyle(fontSize: 10, color: Color(0xFF718096)),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -368,7 +434,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       child: Column(
         children: rooms.take(5).map((room) {
           final usage = room['usage'] as int;
-
+          final String sessionText = usage == 1 ? 'session' : 'sessions';
           final ratio = maxUsage == 0 ? 0.0 : usage / maxUsage;
 
           return Padding(
@@ -390,7 +456,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
 
                     Text(
-                      '$usage sessions',
+                      '$usage $sessionText',
                       style: const TextStyle(
                         fontSize: 10,
                         color: Color(0xFF718096),
