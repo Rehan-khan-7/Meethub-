@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../analytics/presentation/analytics_screen.dart';
 import '../../../widgets/deskverse_bottom_nav.dart';
 import '../../../main.dart';
 import '../../rooms/screens/create_room_screen.dart';
@@ -9,6 +11,7 @@ import '../../../models/user.dart';
 //import '../../../models/workspace.dart';
 import '../../../models/room.dart';
 import '../../rooms/data/room_repository.dart';
+import '../../polls/presentation/polls_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final User user;
@@ -373,118 +376,178 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     // WORKSPACE ANALYTICS
                     // =====================================================
 
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F6F6),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFD0E8E8),
-                          width: 1,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AnalyticsScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F6F6),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFD0E8E8),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  "Workspace Analytics",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF14263D),
+                                  ),
+                                ),
+                                const Spacer(),
+                                const Icon(
+                                  Icons.bar_chart,
+                                  color: Color(0xFF3FA3A3),
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Attendance",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF718096),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        "96%",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF14263D),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Engagement",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF718096),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        "High",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF14263D),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                "Workspace Analytics",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFF14263D),
-                                ),
-                              ),
+                    ),
 
-                              const Spacer(),
+                    const SizedBox(height: 16),
 
-                              const Icon(
-                                Icons.bar_chart,
-                                color: Color(0xFF3FA3A3),
-                                size: 20,
-                              ),
-                            ],
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PollsScreen(),
                           ),
-
-                          const SizedBox(height: 14),
-
-                          Row(
-                            children: [
-                              Container(
-                                width: 58,
-                                height: 58,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xFF3FA3A3),
-                                    width: 4,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    "96%",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF14263D),
-                                    ),
-                                  ),
-                                ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFDCE4DE)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEAF3FF),
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              child: const Icon(
+                                Icons.poll_outlined,
+                                color: Color(0xFF2879D8),
+                                size: 25,
+                              ),
+                            ),
 
-                              const SizedBox(width: 16),
+                            const SizedBox(width: 12),
 
-                              const Column(
+                            const Expanded(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Attendance",
+                                    'Engagement Hub',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF718096),
-                                    ),
-                                  ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    "96%",
-                                    style: TextStyle(
-                                      fontSize: 22,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: Color(0xFF14263D),
                                     ),
                                   ),
-                                ],
-                              ),
 
-                              const Spacer(),
+                                  SizedBox(height: 4),
 
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
                                   Text(
-                                    "Engagement",
+                                    'Vote in active polls and connect with your team.',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Color(0xFF718096),
                                     ),
                                   ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    "High",
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      color: Color(0xFF3FA3A3),
-                                    ),
-                                  ),
                                 ],
                               ),
+                            ),
 
-                              const SizedBox(width: 20),
-                            ],
-                          ),
-                        ],
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF2879D8),
+                              size: 22,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
