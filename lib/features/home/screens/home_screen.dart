@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../../widgets/deskverse_bottom_nav.dart';
 import '../../../main.dart';
 import '../../rooms/screens/create_room_screen.dart';
 import '../../../widgets/deskverse_header.dart';
@@ -602,77 +602,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-
+      bottomNavigationBar: DeskVerseBottomNav(
         currentIndex: 0,
-
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RoomsScreen(
-                  user: widget.user,
-                  workspaceId: currentWorkspaceId,
-                ),
-              ),
-            );
-          }
-
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MeetingsScreen(
-                  user: widget.user,
-                  workspaceId: currentWorkspaceId,
-                ),
-              ),
-            );
-          }
-        },
-
-        selectedItemColor: const Color(0xFF2879D8),
-        unselectedItemColor: const Color(0xFF718096),
-
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-
-        backgroundColor: Colors.white,
-        elevation: 8,
-
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: "Dashboard",
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.meeting_room_outlined),
-            activeIcon: Icon(Icons.meeting_room),
-            label: "Rooms",
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.videocam_outlined),
-            activeIcon: Icon(Icons.videocam),
-            label: "Meetings",
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.check_box_outlined),
-            activeIcon: Icon(Icons.check_box),
-            label: "Tasks",
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            activeIcon: Icon(Icons.more_horiz),
-            label: "More",
-          ),
-        ],
+        user: widget.user,
+        workspaceId: currentWorkspaceId,
       ),
     );
   }

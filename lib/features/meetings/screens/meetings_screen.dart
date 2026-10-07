@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../../widgets/deskverse_bottom_nav.dart';
 import '../../rooms/data/room_repository.dart';
 import '../../../widgets/deskverse_header.dart';
 import '../../../models/meeting.dart';
@@ -178,7 +178,11 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         ),
       ),
 
-      bottomNavigationBar: _buildBottomNavigation(),
+      bottomNavigationBar: DeskVerseBottomNav(
+        currentIndex: 2,
+        user: widget.user,
+        workspaceId: currentWorkspaceId,
+      ),
     );
   }
 
@@ -444,69 +448,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     );
   }
 
-  Widget _buildBottomNavigation() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: 2,
-      selectedItemColor: const Color(0xFF2D5FEF),
-      unselectedItemColor: const Color(0xFF7A8193),
-      selectedFontSize: 10,
-      unselectedFontSize: 10,
-      backgroundColor: Colors.white,
-      elevation: 8,
-
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grid_view_outlined),
-          activeIcon: Icon(Icons.grid_view),
-          label: 'Dashboard',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.meeting_room_outlined),
-          activeIcon: Icon(Icons.meeting_room),
-          label: 'Rooms',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          activeIcon: Icon(Icons.videocam),
-          label: 'Meetings',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble_outline),
-          activeIcon: Icon(Icons.chat_bubble),
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-
-      // 👇 YAHAN ADD KARO
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-          return;
-        }
-
-        if (index == 1) {
-          Navigator.popUntil(context, (route) => route.isFirst);
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RoomsScreen(
-                user: widget.user,
-                workspaceId: widget.workspaceId,
-              ),
-            ),
-          );
-        }
-      },
-    );
-  }
-}
+} 
 
 Widget _buildEmptyMeetings() {
   return SizedBox(
