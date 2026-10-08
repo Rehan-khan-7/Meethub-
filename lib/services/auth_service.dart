@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://rants-remodeler-agent.ngrok-free.dev';
   Future<User> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/api/auth/login'),
@@ -48,7 +47,10 @@ class AuthService {
       body: jsonEncode({'name': name, 'email': email, 'password': password}),
     );
 
-    if (response.statusCode == 201) {
+    print('SIGNUP STATUS: ${response.statusCode}');
+    print('SIGNUP BODY: ${response.body}');
+
+    if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
       final prefs = await SharedPreferences.getInstance();
@@ -57,7 +59,7 @@ class AuthService {
 
       return User.fromJson(data['user']);
     } else {
-      throw Exception('Signup failed');
+      throw Exception('Signup failed: ${response.statusCode} ${response.body}');
     }
   }
 }

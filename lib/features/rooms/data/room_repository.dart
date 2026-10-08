@@ -2,24 +2,41 @@ import '../../../models/room.dart';
 import '../../../config/api_config.dart';
 import '../../../core/network/api_client.dart';
 
+import 'package:flutter/foundation.dart';
+
 class RoomRepository {
   static final List<Room> _rooms = [];
 
   final ApiClient apiClient = ApiClient();
 
   // Backend available hone par true karna.
-  static const bool useBackend = false;
+  static const bool useBackend = true;
 
   Future<List<Room>> getRooms(String workspaceId) async {
-    if (!useBackend) {
-      return _rooms.where((room) => room.workspaceId == workspaceId).toList();
+    try {
+      final response = await apiClient.get(ApiConfig.rooms(workspaceId));
+
+      print('GET ROOMS RESPONSE: $response');
+
+      if (response == null) {
+        return [];
+      }
+
+      final List<dynamic> data = response as List<dynamic>;
+
+      final rooms = data.map((json) {
+        print('ROOM JSON: $json');
+        return Room.fromJson(json as Map<String, dynamic>);
+      }).toList();
+
+      print('PARSED ROOMS: ${rooms.length}');
+
+      return rooms;
+    } catch (e, stackTrace) {
+      print('GET ROOMS ERROR: $e');
+      print(stackTrace);
+      rethrow;
     }
-
-    final response = await apiClient.get(ApiConfig.rooms(workspaceId));
-
-    final List<dynamic> data = response as List<dynamic>;
-
-    return data.map((json) => Room.fromJson(json)).toList();
   }
 
   Future<Room> createRoom({
@@ -49,6 +66,14 @@ class RoomRepository {
       'description': description,
       'type': type,
     });
+
+    debugPrint('CREATE ROOM RESPONSE: $response');
+
+    if (response == null) {
+      throw Exception('Create room returned null response');
+    }
+
+    return Room.fromJson(response);
 
     return Room.fromJson(response);
   }

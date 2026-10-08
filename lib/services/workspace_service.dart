@@ -28,6 +28,8 @@ class WorkspaceService {
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
 
+      print('WORKSPACES RESPONSE: ${response.body}');
+
       return data
           .map(
             (json) => Workspace.fromJson(json),
@@ -65,6 +67,8 @@ class WorkspaceService {
         jsonDecode(response.body),
       );
     }
+
+    
 
     throw Exception(
       'Failed to create workspace: ${response.statusCode}',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/deskverse_scaffold.dart';
 import '../../analytics/presentation/analytics_screen.dart';
 import '../../../widgets/deskverse_bottom_nav.dart';
 import '../../../main.dart';
@@ -12,6 +13,8 @@ import '../../../models/user.dart';
 import '../../../models/room.dart';
 import '../../rooms/data/room_repository.dart';
 import '../../polls/presentation/polls_screen.dart';
+import '../../../widgets/deskverse_drawer.dart';
+import '../../../services/workspace_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final User user;
@@ -25,7 +28,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final RoomRepository roomRepository = RoomRepository();
 
-  final String currentWorkspaceId = 'local-workspace';
+  String? currentWorkspaceId;
+  final WorkspaceService workspaceService = WorkspaceService();
 
   List<Room> rooms = [];
 
@@ -65,7 +69,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Future<void> loadData() async {
     try {
-      final loadedRooms = await roomRepository.getRooms(currentWorkspaceId);
+      final workspaces = await workspaceService.getWorkspaces();
+
+      if (workspaces.isEmpty) {
+        if (!mounted) return;
+
+        setState(() {
+          currentWorkspaceId = null;
+          rooms = [];
+          totalPeople = 0;
+          isLoading = false;
+        });
+
+        return;
+      }
+
+      final workspaceId = workspaces.first.id;
+
+      final loadedRooms = await roomRepository.getRooms(workspaceId);
 
       final people = <String>{};
 
@@ -76,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       if (!mounted) return;
 
       setState(() {
+        currentWorkspaceId = workspaceId;
         rooms = loadedRooms;
         totalPeople = people.length;
         isLoading = false;
@@ -96,12 +118,29 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
 
+      drawer: DeskVerseDrawer(
+        user: widget.user,
+        workspaceId: currentWorkspaceId ?? '',
+      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               // Header
-              const DeskVerseHeader(workspaceName: 'Acme Corp HQ'),
+              DeskVerseHeader(
+                workspaceName: 'Acme Corp HQ',
+
+                onNotificationTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Notifications coming soon')),
+                  );
+                },
+
+                onMenuTap: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -324,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                             builder: (context) =>
                                                 CreateRoomScreen(
                                                   workspaceId:
-                                                      currentWorkspaceId,
+                                                      currentWorkspaceId ?? '',
                                                 ),
                                           ),
                                         );
@@ -382,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           context,
                           MaterialPageRoute(
                             builder: (context) => AnalyticsScreen(
-                              workspaceId: currentWorkspaceId,
+                              workspaceId: currentWorkspaceId ?? '',
                             ),
                           ),
                         );
@@ -670,7 +709,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       bottomNavigationBar: DeskVerseBottomNav(
         currentIndex: 0,
         user: widget.user,
-        workspaceId: currentWorkspaceId,
+        workspaceId: currentWorkspaceId ?? '',
       ),
     );
   }

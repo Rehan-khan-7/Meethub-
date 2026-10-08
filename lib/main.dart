@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'features/auth/screens/login_screen.dart';
 import 'features/home/screens/home_screen.dart';
 import 'models/user.dart';
@@ -17,14 +18,7 @@ class VowApp extends StatelessWidget {
     return MaterialApp(
       navigatorObservers: [routeObserver],
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(
-        user: User(
-          id: 'test-user',
-          name: 'Test User',
-          email: 'test@example.com',
-          role: 'manager',
-        ),
-      ),
+      home: const LoginScreen(),
     );
   }
 }

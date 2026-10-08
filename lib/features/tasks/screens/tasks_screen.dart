@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/deskverse_header.dart';
 import '../../rooms/data/room_repository.dart';
 import '../data/task_repository.dart';
 import 'task_detail_screen.dart';
@@ -489,27 +490,10 @@ class _TasksScreenState extends State<TasksScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
 
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF14263D),
-        elevation: 0,
-        title: const Text(
-          'Tasks',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF14263D),
-          ),
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: Color(0xFFE1E5EA)),
-        ),
-      ),
-
       body: SafeArea(
         child: Column(
           children: [
+            const DeskVerseHeader(workspaceName: 'Acme Corp HQ'),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),

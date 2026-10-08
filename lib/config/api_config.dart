@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'YOUR_GO_BACKEND_URL';
+  static const String baseUrl = 'https://vow-5k2g.onrender.com';
 
   static String workspaces() {
     return '$baseUrl/api/workspaces';
