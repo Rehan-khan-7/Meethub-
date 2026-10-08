@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/meeting_repository.dart';
 import '../../../models/meeting.dart';
 
@@ -6,7 +7,7 @@ class MeetingDetailsScreen extends StatelessWidget {
   final Meeting meeting;
   final String roomName;
   static MeetingRepository meetingRepository = MeetingRepository();
-  
+
   const MeetingDetailsScreen({
     super.key,
     required this.meeting,
@@ -67,21 +68,64 @@ class MeetingDetailsScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete Meeting?'),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+
+          title: const Text(
+            'Delete Meeting?',
+            style: TextStyle(
+              color: Color(0xFF202538),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
           content: const Text(
             'This meeting will be removed from your meetings.',
+            style: TextStyle(
+              color: Color(0xFF777E91),
+              fontSize: 14,
+              height: 1.4,
+            ),
           ),
+
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+
           actions: [
-            TextButton(
+            OutlinedButton(
               onPressed: () {
                 Navigator.pop(context, false);
               },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF2D5FEF),
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFF2D5FEF)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: const Text('Cancel'),
             ),
+
+            const SizedBox(width: 8),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context, true);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D5FEF),
+                foregroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: const Text('Delete'),
             ),
           ],

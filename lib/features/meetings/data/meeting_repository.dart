@@ -2,6 +2,8 @@ import '../../../models/meeting.dart';
 import '../../../config/api_config.dart';
 import '../../../core/network/api_client.dart';
 
+import 'package:flutter/foundation.dart';
+
 class MeetingRepository {
   static final List<Meeting> _meetings = [];
 
@@ -36,35 +38,24 @@ class MeetingRepository {
     required DateTime endTime,
   }) async {
     if (!useBackend) {
-      final meeting = Meeting(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        workspaceId: workspaceId,
-        roomId: roomId,
-        title: title,
-        description: description,
-        createdBy: 'test-user',
-        participants: const [],
-        startTime: startTime,
-        endTime: endTime,
-        meetingCode: 'MEET-${DateTime.now().millisecondsSinceEpoch}',
-        meetingLink: '',
-        status: 'scheduled',
-      );
-
-      _meetings.add(meeting);
-
-      return meeting;
+      // existing local code...
     }
 
-    final response = await apiClient.post(ApiConfig.createMeeting(), {
+    final body = {
       'workspaceId': workspaceId,
       'roomId': roomId,
       'title': title,
       'description': description,
       'participants': [],
-      'startTime': startTime.toIso8601String(),
-      'endTime': endTime.toIso8601String(),
-    });
+      'startTime': startTime.toUtc().toIso8601String(),
+      'endTime': endTime.toUtc().toIso8601String(),
+    };
+
+    debugPrint('CREATE MEETING BODY: $body');
+
+    final response = await apiClient.post(ApiConfig.createMeeting(), body);
+
+    debugPrint('CREATE MEETING RESPONSE: $response');
 
     return Meeting.fromJson(response);
   }
