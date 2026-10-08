@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../widgets/deskverse_bottom_nav.dart';
 import 'room_screen.dart';
 import '../../../models/user.dart';
@@ -100,11 +101,15 @@ class _RoomsScreenState extends State<RoomsScreen> {
     });
   }
 
-  void _openRoom(Room room) {
-    Navigator.push(
+  Future<void> _openRoom(Room room) async {
+    final deleted = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (context) => RoomScreen(room: room)),
     );
+
+    if (deleted == true && mounted) {
+      await loadRooms();
+    }
   }
 
   @override

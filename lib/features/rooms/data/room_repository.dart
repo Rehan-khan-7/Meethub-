@@ -74,8 +74,61 @@ class RoomRepository {
     }
 
     return Room.fromJson(response);
+  }
 
-    return Room.fromJson(response);
+  Future<Room> updateRoom({
+    required String roomId,
+    required String name,
+    required String description,
+    required String type,
+  }) async {
+    if (!useBackend) {
+      final index = _rooms.indexWhere((room) => room.id == roomId);
+
+      if (index == -1) {
+        throw Exception('Room not found');
+      }
+
+      final oldRoom = _rooms[index];
+
+      final updatedRoom = Room(
+        id: oldRoom.id,
+        workspaceId: oldRoom.workspaceId,
+        name: name,
+        description: description,
+        type: type,
+        createdBy: oldRoom.createdBy,
+        members: oldRoom.members,
+      );
+
+      _rooms[index] = updatedRoom;
+
+      return updatedRoom;
+    }
+
+    final response = await apiClient.put(ApiConfig.room(roomId), {
+      'name': name,
+      'description': description,
+      'type': type,
+    });
+
+    debugPrint('UPDATE ROOM RESPONSE: $response');
+
+    if (response == null) {
+      throw Exception('Update room returned null response');
+    }
+
+    // Backend only returns {"status": "updated"}.
+    // Fetch the updated room again.
+    final updatedResponse = await apiClient.get(ApiConfig.room(roomId));
+
+    debugPrint('UPDATED ROOM FETCH RESPONSE: $updatedResponse');
+
+    if (updatedResponse == null) {
+      throw Exception('Updated room could not be fetched');
+    }
+
+    return Room.fromJson(updatedResponse as Map<String, dynamic>);
   }
 
   Future<void> deleteRoom(String roomId) async {

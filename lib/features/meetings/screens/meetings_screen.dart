@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../widgets/deskverse_bottom_nav.dart';
 import '../../rooms/data/room_repository.dart';
 import '../../../widgets/deskverse_header.dart';
@@ -8,6 +9,7 @@ import 'meeting_details_screen.dart';
 import '../../rooms/screens/rooms_screen.dart';
 import 'schedule_meeting_screen.dart';
 import '../data/meeting_repository.dart';
+import '../../../services/workspace_service.dart';
 
 class MeetingsScreen extends StatefulWidget {
   final User user;
@@ -25,7 +27,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   late String currentWorkspaceId;
   final Map<String, String> roomNames = {};
   List<Meeting> meetings = [];
-
+  final WorkspaceService workspaceService = WorkspaceService();
   bool isLoading = true;
   String searchQuery = '';
 
@@ -33,14 +35,82 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   void initState() {
     super.initState();
 
-    currentWorkspaceId = widget.workspaceId ?? 'local-workspace';
+    loadWorkspaceAndMeetings();
+  }
 
-    loadMeetings();
+  Future<void> loadWorkspaceAndMeetings() async {
+    try {
+      String? workspaceId = widget.workspaceId;
+
+      if (workspaceId == null) {
+        final workspaces = await workspaceService.getWorkspaces();
+
+        if (workspaces.isNotEmpty) {
+          workspaceId = workspaces.first.id;
+        }
+      }
+
+      if (workspaceId == null) {
+        if (!mounted) return;
+
+        setState(() {
+          meetings = [];
+          roomNames.clear();
+          isLoading = false;
+        });
+
+        return;
+      }
+
+      String currentWorkspaceId = '';
+
+      debugPrint('MEETINGS WORKSPACE ID: $currentWorkspaceId');
+
+      await loadMeetings();
+    } catch (e, stackTrace) {
+      debugPrint('MEETING WORKSPACE ERROR: $e');
+      debugPrint('$stackTrace');
+
+      if (!mounted) return;
+
+      setState(() {
+        meetings = [];
+        roomNames.clear();
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> loadMeetings() async {
     try {
+      String? workspaceId = widget.workspaceId;
+
+      if (workspaceId == null) {
+        final workspaces = await workspaceService.getWorkspaces();
+
+        if (workspaces.isNotEmpty) {
+          workspaceId = workspaces.first.id;
+        }
+      }
+
+      if (workspaceId == null) {
+        if (!mounted) return;
+
+        setState(() {
+          meetings = [];
+          roomNames.clear();
+          isLoading = false;
+        });
+
+        return;
+      }
+
+      currentWorkspaceId = workspaceId;
+
+      debugPrint('MEETINGS WORKSPACE ID: $currentWorkspaceId');
+
       final data = await meetingRepository.getMeetings(currentWorkspaceId);
+
       final rooms = await roomRepository.getRooms(currentWorkspaceId);
 
       final names = <String, String>{};
@@ -49,17 +119,23 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         names[room.id] = room.name;
       }
 
+      debugPrint('MEETINGS RESPONSE: ${data.length}');
+      debugPrint('MEETING ROOMS: ${rooms.length}');
+
       if (!mounted) return;
 
       setState(() {
         meetings = data;
+
         roomNames
           ..clear()
           ..addAll(names);
+
         isLoading = false;
       });
-    } catch (e) {
-      debugPrint('Meeting error: $e');
+    } catch (e, stackTrace) {
+      debugPrint('MEETING ERROR: $e');
+      debugPrint('$stackTrace');
 
       if (!mounted) return;
 
@@ -447,8 +523,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       ),
     );
   }
-
-} 
+}
 
 Widget _buildEmptyMeetings() {
   return SizedBox(

@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
 
+import '../data/room_repository.dart';
+import 'edit_room_screen.dart';
 import 'room_workspace_screen.dart';
 import '../../../models/room.dart';
 import '../../../widgets/deskverse_header.dart';
 
-class RoomScreen extends StatelessWidget {
+class RoomScreen extends StatefulWidget {
   final Room room;
 
   const RoomScreen({super.key, required this.room});
+
+  @override
+  State<RoomScreen> createState() => _RoomScreenState();
+}
+
+//const RoomScreen({super.key, required this.room});
+
+class _RoomScreenState extends State<RoomScreen> {
+  late Room currentRoom;
+
+  @override
+  void initState() {
+    super.initState();
+    currentRoom = widget.room;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +87,7 @@ class RoomScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  room.name,
+                                  currentRoom.name,
                                   style: const TextStyle(
                                     color: Color(0xFF202538),
                                     fontSize: 22,
@@ -81,7 +98,9 @@ class RoomScreen extends StatelessWidget {
                                 const SizedBox(height: 5),
 
                                 Text(
-                                  room.type.isEmpty ? 'General' : room.type,
+                                  currentRoom.type.isEmpty
+                                      ? 'General'
+                                      : currentRoom.type,
                                   style: const TextStyle(
                                     color: Color(0xFF777E91),
                                     fontSize: 13,
@@ -89,6 +108,159 @@ class RoomScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert,
+                              color: Color(0xFF777E91),
+                            ),
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                final updatedRoom = await Navigator.push<Room>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditRoomScreen(room: currentRoom),
+                                  ),
+                                );
+
+                                if (updatedRoom != null && mounted) {
+                                  setState(() {
+                                    currentRoom = updatedRoom;
+                                  });
+                                }
+                              }
+
+                              if (value == 'delete') {
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+
+                                      title: const Text(
+                                        'Delete Room?',
+                                        style: TextStyle(
+                                          color: Color(0xFF202538),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+
+                                      content: Text(
+                                        'Are you sure you want to delete "${currentRoom.name}"?',
+                                        style: const TextStyle(
+                                          color: Color(0xFF777E91),
+                                          fontSize: 14,
+                                          height: 1.4,
+                                        ),
+                                      ),
+
+                                      actionsPadding: const EdgeInsets.fromLTRB(
+                                        20,
+                                        0,
+                                        20,
+                                        18,
+                                      ),
+
+                                      actions: [
+                                        OutlinedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, false);
+                                          },
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: const Color(
+                                              0xFF2D5FEF,
+                                            ),
+                                            side: const BorderSide(
+                                              color: Color(0xFF2D5FEF),
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          child: const Text('Cancel'),
+                                        ),
+
+                                        const SizedBox(width: 8),
+
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context, true);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFF2D5FEF,
+                                            ),
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          child: const Text('Delete'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (confirmed != true) return;
+
+                                try {
+                                  final roomRepository = RoomRepository();
+
+                                  await roomRepository.deleteRoom(
+                                    currentRoom.id,
+                                  );
+
+                                  if (!mounted) return;
+
+                                  Navigator.pop(context, true);
+                                } catch (e) {
+                                  if (!mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Failed to delete room: $e',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => const [
+                              PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_outlined, size: 20),
+                                    SizedBox(width: 10),
+                                    Text('Edit'),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text('Delete'),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
 
                           Container(
@@ -119,9 +291,9 @@ class RoomScreen extends StatelessWidget {
                     _sectionCard(
                       title: 'DESCRIPTION',
                       child: Text(
-                        room.description.isEmpty
+                        currentRoom.description.isEmpty
                             ? 'No description added.'
-                            : room.description,
+                            : currentRoom.description,
                         style: const TextStyle(
                           color: Color(0xFF4D5365),
                           fontSize: 14,
@@ -135,7 +307,7 @@ class RoomScreen extends StatelessWidget {
                     // Members
                     _sectionCard(
                       title: 'PEOPLE IN ROOM',
-                      child: room.members.isEmpty
+                      child: currentRoom.members.isEmpty
                           ? const Text(
                               'No people in this room yet.',
                               style: TextStyle(
@@ -144,7 +316,7 @@ class RoomScreen extends StatelessWidget {
                               ),
                             )
                           : Column(
-                              children: room.members.map((member) {
+                              children: currentRoom.members.map((member) {
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   leading: CircleAvatar(
@@ -183,7 +355,7 @@ class RoomScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  RoomWorkspaceScreen(room: room),
+                                  RoomWorkspaceScreen(room: currentRoom),
                             ),
                           );
                         },

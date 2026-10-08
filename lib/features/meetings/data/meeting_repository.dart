@@ -7,7 +7,7 @@ class MeetingRepository {
 
   final ApiClient apiClient = ApiClient();
 
-  static const bool useBackend = false;
+  static const bool useBackend = true;
 
   Future<List<Meeting>> getMeetings(String workspaceId) async {
     if (!useBackend) {
@@ -16,15 +16,15 @@ class MeetingRepository {
           .toList();
     }
 
-    final response = await apiClient.get(
-      ApiConfig.meetings(workspaceId),
-    );
+    final response = await apiClient.get(ApiConfig.meetings(workspaceId));
+
+    if (response == null) {
+      return [];
+    }
 
     final List<dynamic> data = response as List<dynamic>;
 
-    return data
-        .map((json) => Meeting.fromJson(json))
-        .toList();
+    return data.map((json) => Meeting.fromJson(json)).toList();
   }
 
   Future<Meeting> createMeeting({
@@ -46,8 +46,7 @@ class MeetingRepository {
         participants: const [],
         startTime: startTime,
         endTime: endTime,
-        meetingCode:
-            'MEET-${DateTime.now().millisecondsSinceEpoch}',
+        meetingCode: 'MEET-${DateTime.now().millisecondsSinceEpoch}',
         meetingLink: '',
         status: 'scheduled',
       );
@@ -57,32 +56,25 @@ class MeetingRepository {
       return meeting;
     }
 
-    final response = await apiClient.post(
-      ApiConfig.createMeeting(),
-      {
-        'workspaceId': workspaceId,
-        'roomId': roomId,
-        'title': title,
-        'description': description,
-        'participants': [],
-        'startTime': startTime.toIso8601String(),
-        'endTime': endTime.toIso8601String(),
-      },
-    );
+    final response = await apiClient.post(ApiConfig.createMeeting(), {
+      'workspaceId': workspaceId,
+      'roomId': roomId,
+      'title': title,
+      'description': description,
+      'participants': [],
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime.toIso8601String(),
+    });
 
     return Meeting.fromJson(response);
   }
 
   Future<void> deleteMeeting(String meetingId) async {
     if (!useBackend) {
-      _meetings.removeWhere(
-        (meeting) => meeting.id == meetingId,
-      );
+      _meetings.removeWhere((meeting) => meeting.id == meetingId);
       return;
     }
 
-    await apiClient.delete(
-      ApiConfig.meeting(meetingId),
-    );
+    await apiClient.delete(ApiConfig.meeting(meetingId));
   }
 }
